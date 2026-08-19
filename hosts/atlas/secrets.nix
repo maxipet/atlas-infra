@@ -35,8 +35,6 @@
   systemd.services.homeserver-compose-secrets = {
     description = "Materialize private Compose environment files";
     wantedBy = [ "multi-user.target" ];
-    after = [ "sops-nix.service" ];
-    requires = [ "sops-nix.service" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
