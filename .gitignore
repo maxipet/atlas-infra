@@ -1,3 +1,8 @@
 compose/*/.env
+.env
 result
-.sops.yaml
+secrets/*.plain.*
+secrets/*.local.*
+secrets/*-key.txt
+secrets/*.pem
+secrets/*.key
