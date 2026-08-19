@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 let
   # Change to the CIDR used by your router before deployment.
   lanCidr = "192.168.178.0/24";
@@ -21,14 +21,19 @@ in
 
   services.resolved.enable = true;
 
-  # Native Netdata provides Atlas resource history without a privileged
-  # monitoring container or Docker control-socket access.
-  services.netdata = {
-    enable = true;
-    enableAnalyticsReporting = false;
-    config.web."bind to" = "127.0.0.1:19999";
+  # Lightweight, local-only live system dashboard. Docker's control socket is
+  # deliberately not exposed to it.
+  systemd.services.glances-web = {
+    description = "Glances web monitoring dashboard";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.glances}/bin/glances --webserver --bind 127.0.0.1 --port 61208 --disable-check-update";
+      Restart = "on-failure";
+      DynamicUser = true;
+      StateDirectory = "glances";
+    };
   };
-  users.users.netdata.extraGroups = lib.mkForce [ ];
 
   networking.nftables.enable = true;
   networking.firewall = {
@@ -61,12 +66,12 @@ in
       '';
       "monitor.max-petri.xyz".extraConfig = ''
         ${tlsConfig}
-        reverse_proxy 127.0.0.1:19999
+        reverse_proxy 127.0.0.1:61208
       '';
     };
   };
 
-  environment.systemPackages = with pkgs; [ age git restic sops vim ];
+  environment.systemPackages = with pkgs; [ age git glances restic sops vim ];
 
   systemd.tmpfiles.rules = [
     "d /srv/containers 0750 root root -"
