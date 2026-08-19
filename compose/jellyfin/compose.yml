@@ -9,6 +9,9 @@ services:
       - /srv/containers/jellyfin/config:/config
       - /srv/containers/jellyfin/cache:/cache
       - /srv/media:/media:ro
+    # Matches the group access used by ownCloud for the shared media directory.
+    group_add:
+      - "0"
     ports:
       # Direct LAN access for TV clients without Tailscale. The NixOS firewall
       # restricts this port to the home network only.

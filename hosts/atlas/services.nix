@@ -79,7 +79,10 @@ in
   systemd.tmpfiles.rules = [
     "d /srv/containers 0750 root root -"
     "d /srv/owncloud 0750 root root -"
-    "d /srv/media 0755 root root -"
+    # The directory remains inaccessible to non-root host users. The two
+    # containers receive group 0 explicitly so OwnCloud can write uploads and
+    # Jellyfin can read them.
+    "d /srv/media 0775 root root -"
     "d /srv/media/Movies 0755 root root -"
     "d /srv/media/TV 0755 root root -"
     "d /srv/media/Music 0755 root root -"

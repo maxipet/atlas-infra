@@ -24,8 +24,16 @@ services:
       OWNCLOUD_REDIS_HOST: redis
       OWNCLOUD_ADMIN_USERNAME: max
       OWNCLOUD_ADMIN_PASSWORD: ${OWNCLOUD_ADMIN_PASSWORD}
+      # Allows the admin to configure the explicitly mounted Media folder as
+      # local external storage in the ownCloud UI.
+      OWNCLOUD_ALLOW_EXTERNAL_LOCAL_STORAGE: "true"
     volumes:
       - /srv/owncloud/files:/mnt/data
+      - /srv/media:/mnt/media
+    # /srv/media is group-writable by root. Supplementary group 0 lets the
+    # unprivileged ownCloud worker upload there without making it world-writable.
+    group_add:
+      - "0"
     ports:
       - "127.0.0.1:8081:8080"
 
