@@ -6,6 +6,7 @@
   networking.hostName = "atlas";
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
+  console.keyMap = "de";
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Keep routine maintenance predictable on the small internal SSD.

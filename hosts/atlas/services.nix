@@ -6,6 +6,9 @@ in
 {
   virtualisation.docker.enable = true;
 
+  # Keep the initial Wi-Fi connection managed until Atlas is moved to Ethernet.
+  networking.networkmanager.enable = true;
+
   services.tailscale = {
     enable = true;
     openFirewall = true;
