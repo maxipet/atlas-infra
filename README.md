@@ -58,6 +58,10 @@ The ISO is written below `result/iso/`. Flash it with Rufus, then boot the serve
 
 Jellyfin scans `/srv/media/Movies`, `/srv/media/TV`, and `/srv/media/Music`, mounted read-only in the container. The media is deliberately disposable and is excluded from backup. ownCloud's small local state is at `/srv/owncloud`; set your ownCloud user's local quota to 1 GB and mount Google Drive privately through the ownCloud admin UI.
 
+The preconfigured ownCloud administrator is `max`. Follow [the Google Drive setup guide](compose/owncloud/GOOGLE_DRIVE_SETUP.md) after the first login to mount the entire personal Google Drive privately.
+
+Use [INSTALL.md](INSTALL.md) for the agreed 50 GB system / remaining `/srv` disk layout.
+
 ## Network model
 
 - Tailscale is enabled on the host and the `tailscale0` interface is trusted only after Tailnet policy authorizes a connection.

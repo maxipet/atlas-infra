@@ -11,6 +11,10 @@ services:
     environment:
       OWNCLOUD_DOMAIN: cloud.max-petri.xyz
       OWNCLOUD_TRUSTED_DOMAINS: cloud.max-petri.xyz
+      # Caddy terminates HTTPS before forwarding to this HTTP-only container.
+      OWNCLOUD_OVERWRITE_HOST: cloud.max-petri.xyz
+      OWNCLOUD_OVERWRITE_PROTOCOL: https
+      OWNCLOUD_OVERWRITE_CLI_URL: https://cloud.max-petri.xyz
       OWNCLOUD_DB_TYPE: mysql
       OWNCLOUD_DB_NAME: owncloud
       OWNCLOUD_DB_USERNAME: owncloud
@@ -18,7 +22,7 @@ services:
       OWNCLOUD_DB_HOST: mariadb
       OWNCLOUD_REDIS_ENABLED: "true"
       OWNCLOUD_REDIS_HOST: redis
-      OWNCLOUD_ADMIN_USERNAME: ${OWNCLOUD_ADMIN_USERNAME}
+      OWNCLOUD_ADMIN_USERNAME: max
       OWNCLOUD_ADMIN_PASSWORD: ${OWNCLOUD_ADMIN_PASSWORD}
     volumes:
       - /srv/owncloud/files:/mnt/data

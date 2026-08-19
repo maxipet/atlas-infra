@@ -1,9 +1,7 @@
-{ ... }:
+{ lib, ... }:
 {
-  imports = [
-    ./hardware-configuration.nix
-    ./services.nix
-  ];
+  imports = [ ./hardware-configuration.nix ./services.nix ]
+    ++ lib.optional (builtins.pathExists ../../secrets/secrets.yaml) ./secrets.nix;
 
   networking.hostName = "atlas";
   time.timeZone = "Europe/Berlin";
@@ -43,8 +41,7 @@
     description = "Max";
     extraGroups = [ "wheel" "docker" ];
     openssh.authorizedKeys.keys = [
-      # Add your key before deployment, for example:
-      # "ssh-ed25519 AAAA... max@laptop"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrXT9/nMuJk+IiYGHs1SRbDoJkT9QcsItC9sQF3KDfE Max@Malfy"
     ];
   };
 
