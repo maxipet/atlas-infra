@@ -83,8 +83,8 @@ in
     # containers receive group 0 explicitly so OwnCloud can write uploads and
     # Jellyfin can read them.
     "d /srv/media 0775 root root -"
-    "d /srv/media/Movies 0755 root root -"
-    "d /srv/media/TV 0755 root root -"
-    "d /srv/media/Music 0755 root root -"
+    "d /srv/media/Movies 0775 root root -"
+    "d /srv/media/TV 0775 root root -"
+    "d /srv/media/Music 0775 root root -"
   ];
 }
