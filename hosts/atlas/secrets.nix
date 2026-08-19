@@ -16,6 +16,19 @@
     };
   };
 
+  # DNS-01 proves domain ownership without exposing any Fritz!Box ports.
+  security.acme = {
+    acceptTerms = true;
+    certs."max-petri.xyz" = {
+      email = "me@max-petri.xyz";
+      extraDomainNames = [ "*.max-petri.xyz" ];
+      dnsProvider = "ionos";
+      environmentFile = config.sops.secrets.ionos_dns_env.path;
+      group = "caddy";
+      reloadServices = [ "caddy.service" ];
+    };
+  };
+
   # Docker Compose needs values in a root-readable environment file at runtime.
   # sops-nix writes the source values into /run/secrets; no plaintext is stored
   # in Git or in the Nix store.

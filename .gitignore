@@ -1,5 +1,6 @@
 compose/*/.env
 .env
+secrets/secrets.yaml
 result
 secrets/*.plain.*
 secrets/*.local.*
