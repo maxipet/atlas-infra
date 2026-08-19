@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   # Change to the CIDR used by your router before deployment.
   lanCidr = "192.168.178.0/24";
@@ -20,6 +20,15 @@ in
   };
 
   services.resolved.enable = true;
+
+  # Native Netdata provides Atlas resource history without a privileged
+  # monitoring container or Docker control-socket access.
+  services.netdata = {
+    enable = true;
+    enableAnalyticsReporting = false;
+    config.web."bind to" = "127.0.0.1:19999";
+  };
+  users.users.netdata.extraGroups = lib.mkForce [ ];
 
   networking.nftables.enable = true;
   networking.firewall = {
@@ -52,7 +61,7 @@ in
       '';
       "monitor.max-petri.xyz".extraConfig = ''
         ${tlsConfig}
-        reverse_proxy 127.0.0.1:8090
+        reverse_proxy 127.0.0.1:19999
       '';
     };
   };

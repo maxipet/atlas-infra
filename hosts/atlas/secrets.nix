@@ -13,8 +13,6 @@
       mariadb_root_password = { };
       vaultwarden_admin_token = { };
       vaultwarden_backup_password = { };
-      beszel_agent_key = { };
-      beszel_agent_token = { };
     };
   };
 
@@ -42,7 +40,7 @@
       RemainAfterExit = true;
     };
     script = ''
-      install -d -m 0700 /etc/nixos/compose/owncloud /etc/nixos/compose/vaultwarden /etc/nixos/compose/beszel
+      install -d -m 0700 /etc/nixos/compose/owncloud /etc/nixos/compose/vaultwarden
 
       {
         printf '%s\n' 'OWNCLOUD_ADMIN_PASSWORD='"$(cat ${config.sops.secrets.owncloud_admin_password.path})"
@@ -55,13 +53,6 @@
         > /etc/nixos/compose/vaultwarden/.env
       chmod 0600 /etc/nixos/compose/vaultwarden/.env
 
-      {
-        # The encrypted values are base64-encoded to safely preserve agent
-        # credentials regardless of their original character set.
-        printf '%s\n' 'KEY='"$(base64 -d < ${config.sops.secrets.beszel_agent_key.path})"
-        printf '%s\n' 'TOKEN='"$(base64 -d < ${config.sops.secrets.beszel_agent_token.path})"
-      } > /etc/nixos/compose/beszel/.agent.env
-      chmod 0600 /etc/nixos/compose/beszel/.agent.env
     '';
   };
 }
