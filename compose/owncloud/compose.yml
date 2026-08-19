@@ -1,0 +1,51 @@
+services:
+  owncloud:
+    image: owncloud/server:latest
+    container_name: owncloud
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      OWNCLOUD_DOMAIN: cloud.max-petri.xyz
+      OWNCLOUD_TRUSTED_DOMAINS: cloud.max-petri.xyz
+      OWNCLOUD_DB_TYPE: mysql
+      OWNCLOUD_DB_NAME: owncloud
+      OWNCLOUD_DB_USERNAME: owncloud
+      OWNCLOUD_DB_PASSWORD: ${OWNCLOUD_DB_PASSWORD}
+      OWNCLOUD_DB_HOST: mariadb
+      OWNCLOUD_REDIS_ENABLED: "true"
+      OWNCLOUD_REDIS_HOST: redis
+      OWNCLOUD_ADMIN_USERNAME: ${OWNCLOUD_ADMIN_USERNAME}
+      OWNCLOUD_ADMIN_PASSWORD: ${OWNCLOUD_ADMIN_PASSWORD}
+    volumes:
+      - /srv/containers/owncloud/files:/mnt/data
+    ports:
+      - "127.0.0.1:8081:8080"
+
+  mariadb:
+    image: mariadb:11.4
+    container_name: owncloud-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: owncloud
+      MARIADB_USER: owncloud
+      MARIADB_PASSWORD: ${OWNCLOUD_DB_PASSWORD}
+    volumes:
+      - /srv/containers/owncloud/mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: owncloud-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - /srv/containers/owncloud/redis:/data

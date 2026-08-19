@@ -1,0 +1,15 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      DOMAIN: https://vault.max-petri.xyz
+      SIGNUPS_ALLOWED: "false"
+      INVITATIONS_ALLOWED: "true"
+      WEBSOCKET_ENABLED: "true"
+    env_file: .env
+    volumes:
+      - /srv/containers/vaultwarden:/data
+    ports:
+      - "127.0.0.1:8222:80"

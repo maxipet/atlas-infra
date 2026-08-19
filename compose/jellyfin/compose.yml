@@ -1,0 +1,16 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      JELLYFIN_PublishedServerUrl: https://media.max-petri.xyz
+    volumes:
+      - /srv/containers/jellyfin/config:/config
+      - /srv/containers/jellyfin/cache:/cache
+      - /srv/media:/media:ro
+    ports:
+      - "127.0.0.1:8096:8096"
+    # Optional Intel/AMD hardware transcoding after confirming /dev/dri exists:
+    # devices:
+    #   - /dev/dri:/dev/dri
