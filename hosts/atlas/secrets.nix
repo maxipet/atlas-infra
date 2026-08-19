@@ -43,9 +43,9 @@
       install -d -m 0700 /etc/nixos/compose/owncloud /etc/nixos/compose/vaultwarden
 
       {
-        printf '%s\\n' 'OWNCLOUD_ADMIN_PASSWORD='"$(cat ${config.sops.secrets.owncloud_admin_password.path})"
-        printf '%s\\n' 'OWNCLOUD_DB_PASSWORD='"$(cat ${config.sops.secrets.owncloud_db_password.path})"
-        printf '%s\\n' 'MARIADB_ROOT_PASSWORD='"$(cat ${config.sops.secrets.mariadb_root_password.path})"
+        printf '%s\n' 'OWNCLOUD_ADMIN_PASSWORD='"$(cat ${config.sops.secrets.owncloud_admin_password.path})"
+        printf '%s\n' 'OWNCLOUD_DB_PASSWORD='"$(cat ${config.sops.secrets.owncloud_db_password.path})"
+        printf '%s\n' 'MARIADB_ROOT_PASSWORD='"$(cat ${config.sops.secrets.mariadb_root_password.path})"
       } > /etc/nixos/compose/owncloud/.env
       chmod 0600 /etc/nixos/compose/owncloud/.env
 
