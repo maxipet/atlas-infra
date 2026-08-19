@@ -3,7 +3,7 @@
   # This module is loaded only once secrets/secrets.yaml exists and has been
   # encrypted with the Atlas age recipient. Nothing below contains a secret.
   sops = {
-    defaultSopsFile = ../../secrets/secrets.yaml;
+    defaultSopsFile = /etc/nixos/secrets/secrets.yaml;
     age.keyFile = "/var/lib/sops-nix/key.txt";
     secrets = {
       ionos_dns_env = { };

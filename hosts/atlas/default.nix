@@ -1,7 +1,9 @@
 { lib, ... }:
 {
   imports = [ ./hardware-configuration.nix ./services.nix ]
-    ++ lib.optional (builtins.pathExists ../../secrets/secrets.yaml) ./secrets.nix;
+    # The encrypted secret file stays local and is deliberately Git-ignored.
+    # Rebuilds therefore use --impure to inspect this server-local path.
+    ++ lib.optional (builtins.pathExists /etc/nixos/secrets/secrets.yaml) ./secrets.nix;
 
   networking.hostName = "atlas";
   time.timeZone = "Europe/Berlin";
@@ -39,6 +41,7 @@
     dates = "04:30";
     randomizedDelaySec = "30min";
     allowReboot = true;
+    flags = [ "--impure" ];
   };
 
   users.users.max = {

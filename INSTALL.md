@@ -26,7 +26,7 @@ git remote add origin https://github.com/maxipet/atlas-infra.git
 git fetch origin
 git switch --track origin/main
 cp /etc/nixos/hardware-configuration.nix hosts/atlas/hardware-configuration.nix
-NIX_CONFIG="experimental-features = nix-command flakes" nixos-rebuild switch --flake /etc/nixos#atlas
+NIX_CONFIG="experimental-features = nix-command flakes" nixos-rebuild switch --impure --flake /etc/nixos#atlas
 ```
 
 The first Atlas rebuild creates the `max` account and enables key-only SSH. Test `ssh max@<server-ip>` from the Windows PC before unplugging the monitor. Atlas keeps NetworkManager enabled while it is on Wi-Fi; simply connect Ethernet later and it will obtain an address from the Fritz!Box automatically.

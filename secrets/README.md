@@ -16,7 +16,7 @@ Copy the `age1...` public recipient only. Put the private key in an offline reco
 
 Copy `secrets.yaml.example` to a temporary file, fill it locally, and encrypt it as `secrets.yaml`. Keep the encrypted `secrets.yaml` on Atlas only; do not commit it. This repository's NixOS configuration deliberately does not reference it until this step is complete, so the first boot is not blocked by a missing secret file.
 
-After `secrets.yaml` is present, run `sudo nixos-rebuild switch --flake /etc/nixos#atlas` again. The configuration then decrypts the values only into `/run/secrets` and creates root-only Docker environment files for ownCloud and Vaultwarden at service start.
+After `secrets.yaml` is present, run `sudo nixos-rebuild switch --impure --flake /etc/nixos#atlas` again. The configuration then decrypts the values only into `/run/secrets` and creates root-only Docker environment files for ownCloud and Vaultwarden at service start.
 
 The encrypted local `secrets.yaml` also contains the IONOS DNS API key. After the rebuild, Atlas obtains a Let’s Encrypt certificate for `max-petri.xyz` and `*.max-petri.xyz` through DNS-01 without opening any Fritz!Box ports.
 
