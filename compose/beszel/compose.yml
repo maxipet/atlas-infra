@@ -13,3 +13,18 @@ services:
       - /srv/containers/beszel/socket:/beszel_socket
     ports:
       - "127.0.0.1:8090:8090"
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .agent.env
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      HUB_URL: http://localhost:8090
+    volumes:
+      - /srv/containers/beszel/agent:/var/lib/beszel-agent
+      - /srv/containers/beszel/socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro

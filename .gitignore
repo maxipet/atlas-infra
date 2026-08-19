@@ -1,4 +1,5 @@
 compose/*/.env
+compose/*/.agent.env
 .env
 secrets/secrets.yaml
 result

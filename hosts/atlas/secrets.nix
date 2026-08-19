@@ -13,6 +13,8 @@
       mariadb_root_password = { };
       vaultwarden_admin_token = { };
       vaultwarden_backup_password = { };
+      beszel_agent_key = { };
+      beszel_agent_token = { };
     };
   };
 
@@ -40,7 +42,7 @@
       RemainAfterExit = true;
     };
     script = ''
-      install -d -m 0700 /etc/nixos/compose/owncloud /etc/nixos/compose/vaultwarden
+      install -d -m 0700 /etc/nixos/compose/owncloud /etc/nixos/compose/vaultwarden /etc/nixos/compose/beszel
 
       {
         printf '%s\n' 'OWNCLOUD_ADMIN_PASSWORD='"$(cat ${config.sops.secrets.owncloud_admin_password.path})"
@@ -49,9 +51,15 @@
       } > /etc/nixos/compose/owncloud/.env
       chmod 0600 /etc/nixos/compose/owncloud/.env
 
-      printf '%s\\n' 'ADMIN_TOKEN='"$(cat ${config.sops.secrets.vaultwarden_admin_token.path})" \
+      printf '%s\n' 'ADMIN_TOKEN='"$(cat ${config.sops.secrets.vaultwarden_admin_token.path})" \
         > /etc/nixos/compose/vaultwarden/.env
       chmod 0600 /etc/nixos/compose/vaultwarden/.env
+
+      {
+        printf '%s\n' 'BESZEL_AGENT_KEY='"$(cat ${config.sops.secrets.beszel_agent_key.path})"
+        printf '%s\n' 'BESZEL_AGENT_TOKEN='"$(cat ${config.sops.secrets.beszel_agent_token.path})"
+      } > /etc/nixos/compose/beszel/.agent.env
+      chmod 0600 /etc/nixos/compose/beszel/.agent.env
     '';
   };
 }
