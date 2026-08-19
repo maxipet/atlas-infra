@@ -56,8 +56,10 @@
       chmod 0600 /etc/nixos/compose/vaultwarden/.env
 
       {
-        printf '%s\n' 'KEY='"$(cat ${config.sops.secrets.beszel_agent_key.path})"
-        printf '%s\n' 'TOKEN='"$(cat ${config.sops.secrets.beszel_agent_token.path})"
+        # The encrypted values are base64-encoded to safely preserve agent
+        # credentials regardless of their original character set.
+        printf '%s\n' 'KEY='"$(base64 -d < ${config.sops.secrets.beszel_agent_key.path})"
+        printf '%s\n' 'TOKEN='"$(base64 -d < ${config.sops.secrets.beszel_agent_token.path})"
       } > /etc/nixos/compose/beszel/.agent.env
       chmod 0600 /etc/nixos/compose/beszel/.agent.env
     '';
