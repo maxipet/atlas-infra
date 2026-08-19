@@ -9,6 +9,10 @@
   console.keyMap = "de";
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Atlas boots in UEFI mode from the FAT32 EFI system partition mounted at /boot.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
   # Keep routine maintenance predictable on the small internal SSD.
   nix = {
     optimise.automatic = true;
