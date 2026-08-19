@@ -40,7 +40,10 @@ in
     enable = true;
     trustedInterfaces = [ "tailscale0" ];
     extraInputRules = ''
-      ip saddr ${lanCidr} tcp dport { 22, 80, 443 } accept
+      # Jellyfin's direct HTTP port is for LAN clients such as the Fire TV.
+      # It remains blocked from all non-LAN networks; remote access goes via
+      # Caddy HTTPS and Tailscale instead.
+      ip saddr ${lanCidr} tcp dport { 22, 80, 443, 8096 } accept
     '';
   };
 

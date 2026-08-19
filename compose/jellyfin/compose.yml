@@ -10,6 +10,8 @@ services:
       - /srv/containers/jellyfin/cache:/cache
       - /srv/media:/media:ro
     ports:
-      - "127.0.0.1:8096:8096"
+      # Direct LAN access for TV clients without Tailscale. The NixOS firewall
+      # restricts this port to the home network only.
+      - "0.0.0.0:8096:8096"
     devices:
       - /dev/dri:/dev/dri
