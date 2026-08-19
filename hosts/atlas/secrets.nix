@@ -56,8 +56,8 @@
       chmod 0600 /etc/nixos/compose/vaultwarden/.env
 
       {
-        printf '%s\n' 'BESZEL_AGENT_KEY='"$(cat ${config.sops.secrets.beszel_agent_key.path})"
-        printf '%s\n' 'BESZEL_AGENT_TOKEN='"$(cat ${config.sops.secrets.beszel_agent_token.path})"
+        printf '%s\n' 'KEY='"$(cat ${config.sops.secrets.beszel_agent_key.path})"
+        printf '%s\n' 'TOKEN='"$(cat ${config.sops.secrets.beszel_agent_token.path})"
       } > /etc/nixos/compose/beszel/.agent.env
       chmod 0600 /etc/nixos/compose/beszel/.agent.env
     '';
