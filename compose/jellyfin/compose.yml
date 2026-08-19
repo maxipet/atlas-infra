@@ -11,6 +11,6 @@ services:
       - /srv/media:/media:ro
     ports:
       - "127.0.0.1:8096:8096"
-    # Optional Intel/AMD hardware transcoding after confirming /dev/dri exists:
+    # Enable Intel Quick Sync after confirming `ls /dev/dri` returns a render node:
     # devices:
     #   - /dev/dri:/dev/dri

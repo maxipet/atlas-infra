@@ -2,7 +2,7 @@
 
 This repository builds a graphical bootstrap ISO and configures a private NixOS home server for `max-petri.xyz`.
 
-It includes Docker Compose stacks for Vaultwarden, ownCloud, Dockge, and Jellyfin. Caddy is the only web-facing service; every container port binds only to localhost. Tailscale grants remote access, while a restrictive NixOS firewall allows access from the home LAN.
+It includes Docker Compose stacks for Vaultwarden, ownCloud Classic, Dockge, and Jellyfin. Caddy is the only web-facing service; every container port binds only to localhost. Tailscale grants remote access, while a restrictive NixOS firewall allows access from the home LAN.
 
 ## Service names
 
@@ -20,13 +20,7 @@ It includes Docker Compose stacks for Vaultwarden, ownCloud, Dockge, and Jellyfi
 3. Add DNS overrides for these same records on your router, pointing to the server's fixed LAN address. LAN-only devices will then use the same friendly names.
 4. Do **not** forward ports 80 or 443 on your router.
 
-The Caddy setup uses an internal certificate authority to avoid exposing the server for certificate validation. After Caddy starts, distribute and trust this certificate on your client devices:
-
-```text
-/var/lib/caddy/.local/share/caddy/pki/authorities/local/root.crt
-```
-
-For browser-trusted certificates without installing a private root certificate, add DNS-01 ACME later for the provider hosting `max-petri.xyz`.
+The final deployment will use browser-trusted certificates through IONOS DNS-01 validation. DNS validation does not require ports 80 or 443 to be publicly reachable. The IONOS API key is an encrypted secret; see `secrets/README.md`.
 
 ## Build the ISO from Windows
 
@@ -43,14 +37,8 @@ The ISO is written below `result/iso/`. Flash it with Rufus, then boot the serve
 1. Copy this repository to `/etc/nixos` on the installed server.
 2. Replace `hosts/atlas/hardware-configuration.nix` with the file generated during NixOS installation. The placeholder intentionally stops accidental deployment.
 3. In `hosts/atlas/default.nix`, set your actual user name and SSH public key.
-4. In `hosts/atlas/services.nix`, set `lanCidr` to your real home-network range. Give the server a fixed DHCP lease in your router.
-5. Create secret files from the examples and make them readable only by root:
-
-   ```bash
-   cp compose/vaultwarden/.env.example compose/vaultwarden/.env
-   cp compose/owncloud/.env.example compose/owncloud/.env
-   chmod 600 compose/*/.env
-   ```
+4. `hosts/atlas/services.nix` already uses your Fritz!Box LAN range, `192.168.178.0/24`. Give the server a fixed DHCP lease in your router.
+5. Complete [the secret setup](secrets/README.md) before creating any application `.env` files. They must be generated locally from encrypted secrets, owned by root, and never committed.
 
 6. Apply the host configuration:
 
@@ -68,7 +56,27 @@ The ISO is written below `result/iso/`. Flash it with Rufus, then boot the serve
    cd /etc/nixos/compose/jellyfin && sudo docker compose up -d
    ```
 
-Jellyfin scans host media from `/srv/media`, mounted read-only in the container. Create subfolders such as `/srv/media/Movies`, `/srv/media/TV`, and `/srv/media/Music`. It is intentionally not writable by Jellyfin.
+Jellyfin scans `/srv/media/Movies`, `/srv/media/TV`, and `/srv/media/Music`, mounted read-only in the container. The media is deliberately disposable and is excluded from backup. ownCloud's small local state is at `/srv/owncloud`; set your ownCloud user's local quota to 1 GB and mount Google Drive privately through the ownCloud admin UI.
+
+## Network model
+
+- Tailscale is enabled on the host and the `tailscale0` interface is trusted only after Tailnet policy authorizes a connection.
+- The LAN firewall permits SSH and HTTPS only from `192.168.178.0/24`.
+- Docker services bind their ports to `127.0.0.1`; only Caddy can reach them from the LAN or Tailnet.
+- Do not configure router port forwarding. This is especially important because many home connections have publicly routable IPv6.
+- Use a Fritz!Box DNS rebind/local-DNS override for the service names to resolve to Atlas's LAN address at home. Tailnet clients can resolve them to its stable Tailscale address.
+
+## Secrets, certificates, and alerts
+
+Plaintext secrets are not part of this repository. Follow [the secret setup instructions](secrets/README.md) after installation. The intended alert path is failure-only email from `me@max-petri.xyz` to the same address through IONOS SMTP. You enter the mailbox password locally as an encrypted secret. Until that secret has been set up, the system deliberately does not try to send mail.
+
+For ownCloud Google Drive integration, use a personal Google OAuth application in **Production** mode and configure this redirect URI:
+
+```text
+https://cloud.max-petri.xyz/index.php/settings/admin?sectionid=storage
+```
+
+Testing-mode Drive OAuth refresh tokens expire after seven days.
 
 ## Tailscale policy starter
 
@@ -93,4 +101,4 @@ Add this to the Tailnet policy, then restrict `autogroup:member` further if you 
 
 Create a `compose/<service>/compose.yml`, bind its web port to `127.0.0.1`, and add a Caddy virtual host in `hosts/atlas/services.nix`. Store the Compose files in Git; Dockge is a convenient UI, not the source of truth.
 
-Back up `/srv/containers` and application databases to encrypted off-site storage, and test restoration regularly.
+The only automated backup planned for this first stage is a small encrypted Vaultwarden backup to Google Drive. Jellyfin media and the Google Drive-mounted ownCloud files are intentionally excluded.

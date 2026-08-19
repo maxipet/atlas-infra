@@ -21,7 +21,7 @@ services:
       OWNCLOUD_ADMIN_USERNAME: ${OWNCLOUD_ADMIN_USERNAME}
       OWNCLOUD_ADMIN_PASSWORD: ${OWNCLOUD_ADMIN_PASSWORD}
     volumes:
-      - /srv/containers/owncloud/files:/mnt/data
+      - /srv/owncloud/files:/mnt/data
     ports:
       - "127.0.0.1:8081:8080"
 

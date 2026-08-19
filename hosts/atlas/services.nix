@@ -11,6 +11,8 @@ in
     openFirewall = true;
   };
 
+  services.resolved.enable = true;
+
   networking.nftables.enable = true;
   networking.firewall = {
     enable = true;
@@ -43,10 +45,14 @@ in
     };
   };
 
-  environment.systemPackages = with pkgs; [ git vim restic ];
+  environment.systemPackages = with pkgs; [ age git restic sops vim ];
 
   systemd.tmpfiles.rules = [
     "d /srv/containers 0750 root root -"
+    "d /srv/owncloud 0750 root root -"
     "d /srv/media 0755 root root -"
+    "d /srv/media/Movies 0755 root root -"
+    "d /srv/media/TV 0755 root root -"
+    "d /srv/media/Music 0755 root root -"
   ];
 }
