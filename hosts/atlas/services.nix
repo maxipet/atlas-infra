@@ -43,8 +43,36 @@ in
       # Jellyfin's direct HTTP port is for LAN clients such as the Fire TV.
       # It remains blocked from all non-LAN networks; remote access goes via
       # Caddy HTTPS and Tailscale instead.
-      ip saddr ${lanCidr} tcp dport { 22, 80, 443, 8096 } accept
+      # SMB is deliberately available only on the home LAN.
+      ip saddr ${lanCidr} tcp dport { 22, 80, 443, 445, 8096 } accept
     '';
+  };
+
+  # A conventional authenticated Windows share for adding Jellyfin media.
+  # It is private to the LAN; the Samba password is stored by Samba, not Git.
+  services.samba = {
+    enable = true;
+    openFirewall = false;
+    settings = {
+      global = {
+        "workgroup" = "WORKGROUP";
+        "server string" = "Atlas media server";
+        "server min protocol" = "SMB2_02";
+        "map to guest" = "never";
+        "hosts allow" = "127.0.0.1 ${lanCidr}";
+      };
+      media = {
+        path = "/srv/media";
+        "browseable" = "yes";
+        "read only" = "no";
+        "valid users" = "max";
+        "force group" = "media";
+        "create mask" = "0660";
+        "directory mask" = "2770";
+        "force create mode" = "0660";
+        "force directory mode" = "2770";
+      };
+    };
   };
 
   # Containers expose HTTP only on 127.0.0.1. Caddy is their sole HTTPS entry point.
@@ -79,12 +107,10 @@ in
   systemd.tmpfiles.rules = [
     "d /srv/containers 0750 root root -"
     "d /srv/owncloud 0750 root root -"
-    # The directory remains inaccessible to non-root host users. The two
-    # containers receive group 0 explicitly so OwnCloud can write uploads and
-    # Jellyfin can read them.
-    "d /srv/media 0775 root root -"
-    "d /srv/media/Movies 0775 root root -"
-    "d /srv/media/TV 0775 root root -"
-    "d /srv/media/Music 0775 root root -"
+    # New media inherits the dedicated media group used by Samba and Jellyfin.
+    "d /srv/media 2770 root media -"
+    "d /srv/media/Movies 2770 root media -"
+    "d /srv/media/TV 2770 root media -"
+    "d /srv/media/Music 2770 root media -"
   ];
 }

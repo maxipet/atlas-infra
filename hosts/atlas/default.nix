@@ -44,10 +44,14 @@
     flags = [ "--impure" ];
   };
 
+  # Shared by the authenticated Samba user and Jellyfin's read-only container
+  # mount. The fixed ID makes the Docker supplementary group predictable.
+  users.groups.media.gid = 2000;
+
   users.users.max = {
     isNormalUser = true;
     description = "Max";
-    extraGroups = [ "wheel" "docker" ];
+    extraGroups = [ "wheel" "docker" "media" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrXT9/nMuJk+IiYGHs1SRbDoJkT9QcsItC9sQF3KDfE Max@Malfy"
     ];
