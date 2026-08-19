@@ -32,7 +32,7 @@ in
         tls internal
         reverse_proxy 127.0.0.1:8081
       '';
-      "dockge.max-petri.xyz".extraConfig = ''
+      "atlas.max-petri.xyz".extraConfig = ''
         tls internal
         reverse_proxy 127.0.0.1:5001
       '';

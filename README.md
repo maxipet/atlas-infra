@@ -10,7 +10,7 @@ It includes Docker Compose stacks for Vaultwarden, ownCloud, Dockge, and Jellyfi
 | --- | --- |
 | Vaultwarden | `https://vault.max-petri.xyz` |
 | ownCloud | `https://cloud.max-petri.xyz` |
-| Dockge | `https://dockge.max-petri.xyz` |
+| Dockge | `https://atlas.max-petri.xyz` |
 | Jellyfin | `https://media.max-petri.xyz` |
 
 ## DNS and private access
