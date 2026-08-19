@@ -3,7 +3,7 @@ let
   # Change to the CIDR used by your router before deployment.
   lanCidr = "192.168.178.0/24";
   tlsConfig =
-    if builtins.pathExists ../../secrets/secrets.yaml then
+    if builtins.pathExists /etc/nixos/secrets/secrets.yaml then
       "tls /var/lib/acme/max-petri.xyz/fullchain.pem /var/lib/acme/max-petri.xyz/key.pem"
     else
       "tls internal";
