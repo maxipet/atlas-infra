@@ -1,0 +1,15 @@
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel
+    restart: unless-stopped
+    environment:
+      APP_URL: https://monitor.max-petri.xyz
+      # Avoid network update checks; Atlas updates images deliberately.
+      CHECK_UPDATES: "false"
+    volumes:
+      - /srv/containers/beszel/data:/beszel_data
+      # This is prepared for the local agent added after first login.
+      - /srv/containers/beszel/socket:/beszel_socket
+    ports:
+      - "127.0.0.1:8090:8090"
