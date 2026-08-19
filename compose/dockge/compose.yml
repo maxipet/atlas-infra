@@ -4,10 +4,12 @@ services:
     container_name: dockge
     restart: unless-stopped
     environment:
-      DOCKGE_STACKS_DIR: /opt/stacks
+      DOCKGE_STACKS_DIR: /etc/nixos/compose
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /srv/containers/dockge:/app/data
-      - /etc/nixos/compose:/opt/stacks
+      # Dockge must see its stack directory at the exact same absolute path
+      # as Docker sees on the host.
+      - /etc/nixos/compose:/etc/nixos/compose
     ports:
       - "127.0.0.1:5001:5001"
