@@ -1,6 +1,7 @@
 { lib, ... }:
 {
   imports = [ ./hardware-configuration.nix ./services.nix ]
+    ++ lib.optional (builtins.pathExists ../../secrets/ionos.yaml) ./dns.nix
     ++ lib.optional (builtins.pathExists ../../secrets/secrets.yaml) ./secrets.nix;
 
   networking.hostName = "atlas";

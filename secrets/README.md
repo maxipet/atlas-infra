@@ -18,6 +18,12 @@ Create `.sops.yaml` from `.sops.yaml.example`, replace the recipient, then copy 
 
 After `secrets.yaml` is present, run `sudo nixos-rebuild switch --flake /etc/nixos#atlas` again. The configuration then decrypts the values only into `/run/secrets` and creates root-only Docker environment files for ownCloud and Vaultwarden at service start.
 
+## Enable IONOS DNS-01 certificates first
+
+The IONOS API key can be encrypted independently before the application passwords are ready. On Atlas, generate an age key if it does not already exist, copy the displayed `age1...` recipient, and encrypt `ionos.yaml.example` as `ionos.yaml` using that recipient. Its only plaintext value is one line in the form `IONOS_API_KEY=<prefix>.<secret>`.
+
+Commit only the encrypted `secrets/ionos.yaml`, then rebuild Atlas. It obtains a Let’s Encrypt certificate for `max-petri.xyz` and `*.max-petri.xyz` through DNS-01 without opening any Fritz!Box ports.
+
 ## Secrets that will be needed
 
 - IONOS DNS API key: DNS-01 certificates for `*.max-petri.xyz` (use the `ionos_dns_env` multi-line value exactly as shown in `secrets.yaml.example`)

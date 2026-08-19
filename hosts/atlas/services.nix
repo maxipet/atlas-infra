@@ -2,6 +2,11 @@
 let
   # Change to the CIDR used by your router before deployment.
   lanCidr = "192.168.178.0/24";
+  tlsConfig =
+    if builtins.pathExists ../../secrets/ionos.yaml then
+      "tls /var/lib/acme/max-petri.xyz/fullchain.pem /var/lib/acme/max-petri.xyz/key.pem"
+    else
+      "tls internal";
 in
 {
   virtualisation.docker.enable = true;
@@ -30,19 +35,19 @@ in
     enable = true;
     virtualHosts = {
       "vault.max-petri.xyz".extraConfig = ''
-        tls internal
+        ${tlsConfig}
         reverse_proxy 127.0.0.1:8222
       '';
       "cloud.max-petri.xyz".extraConfig = ''
-        tls internal
+        ${tlsConfig}
         reverse_proxy 127.0.0.1:8081
       '';
       "atlas.max-petri.xyz".extraConfig = ''
-        tls internal
+        ${tlsConfig}
         reverse_proxy 127.0.0.1:5001
       '';
       "media.max-petri.xyz".extraConfig = ''
-        tls internal
+        ${tlsConfig}
         reverse_proxy 127.0.0.1:8096
       '';
     };
