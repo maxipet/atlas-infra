@@ -13,6 +13,9 @@
       mariadb_root_password = { };
       vaultwarden_admin_token = { };
       vaultwarden_backup_password = { };
+      n8n_db_password = { };
+      n8n_encryption_key = { };
+      n8n_runners_auth_token = { };
     };
   };
 
@@ -40,7 +43,10 @@
       RemainAfterExit = true;
     };
     script = ''
-      install -d -m 0700 /etc/nixos/compose/owncloud /etc/nixos/compose/vaultwarden
+      install -d -m 0700 \
+        /etc/nixos/compose/owncloud \
+        /etc/nixos/compose/vaultwarden \
+        /etc/nixos/compose/n8n
 
       {
         printf '%s\n' 'OWNCLOUD_ADMIN_PASSWORD='"$(cat ${config.sops.secrets.owncloud_admin_password.path})"
@@ -52,6 +58,13 @@
       printf '%s\n' 'ADMIN_TOKEN='"$(cat ${config.sops.secrets.vaultwarden_admin_token.path})" \
         > /etc/nixos/compose/vaultwarden/.env
       chmod 0600 /etc/nixos/compose/vaultwarden/.env
+
+      {
+        printf '%s\n' 'N8N_DB_PASSWORD='"$(cat ${config.sops.secrets.n8n_db_password.path})"
+        printf '%s\n' 'N8N_ENCRYPTION_KEY='"$(cat ${config.sops.secrets.n8n_encryption_key.path})"
+        printf '%s\n' 'N8N_RUNNERS_AUTH_TOKEN='"$(cat ${config.sops.secrets.n8n_runners_auth_token.path})"
+      } > /etc/nixos/compose/n8n/.env
+      chmod 0600 /etc/nixos/compose/n8n/.env
 
     '';
   };

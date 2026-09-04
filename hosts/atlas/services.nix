@@ -99,6 +99,10 @@ in
         ${tlsConfig}
         reverse_proxy 127.0.0.1:61208
       '';
+      "n8n.max-petri.xyz".extraConfig = ''
+        ${tlsConfig}
+        reverse_proxy 127.0.0.1:5678
+      '';
     };
   };
 
@@ -106,6 +110,9 @@ in
 
   systemd.tmpfiles.rules = [
     "d /srv/containers 0750 root root -"
+    "d /srv/containers/n8n 0750 root root -"
+    # The n8n image runs as its unprivileged node user (UID 1000).
+    "d /srv/containers/n8n/data 0750 1000 1000 -"
     "d /srv/owncloud 0750 root root -"
     # New media inherits the dedicated media group used by Samba and Jellyfin.
     "d /srv/media 2770 root media -"

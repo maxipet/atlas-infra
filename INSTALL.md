@@ -36,7 +36,10 @@ The first Atlas rebuild creates the `max` account and enables key-only SSH. Test
 1. Set a Fritz!Box DHCP reservation for Atlas.
 2. Log in as `max` using the already-configured SSH public key.
 3. Create Atlas's local age key and encrypted secrets, following `secrets/README.md`.
-4. Configure IONOS DNS-01 certificates before publishing the service DNS records.
-5. Start the Compose stacks and complete the ownCloud Google Drive authorization.
+4. Configure IONOS DNS-01 certificates before publishing the service DNS records,
+   including the LAN and Tailnet records for `n8n.max-petri.xyz`.
+5. Start the Compose stacks, create the n8n owner account and enable 2FA as
+   described in `compose/n8n/README.md`, then complete the ownCloud Google Drive
+   authorization.
 
 Do not expose ports on the Fritz!Box. Tailnet access is through Tailscale only.

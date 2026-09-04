@@ -12,7 +12,10 @@ Tailnet clients ──┐
 LAN clients ──────┘               │                  ├─ Vaultwarden :8222
                                   │                  ├─ ownCloud    :8081
                                   │                  ├─ Dockge      :5001
-                                  │                  └─ Jellyfin    :8096
+                                  │                  ├─ Jellyfin    :8096
+                                  │                  └─ n8n         :5678
+                                  │                       ├─ PostgreSQL (internal)
+                                  │                       └─ task runner (internal)
                                   │
                                   └── ACME DNS-01 certificates (IONOS)
 
@@ -43,8 +46,11 @@ The firewall and the Compose port bindings are deliberate defense-in-depth. Do n
 | ownCloud | `https://cloud.max-petri.xyz` | `127.0.0.1:8081` | `/srv/owncloud/files`, MariaDB and Redis under `/srv/containers/owncloud` | Admin username: `max` |
 | Dockge | `https://atlas.max-petri.xyz` | `127.0.0.1:5001` | `/srv/containers/dockge` | Convenience UI; Git remains source of truth |
 | Jellyfin | `https://media.max-petri.xyz` | `127.0.0.1:8096` | config/cache in `/srv/containers/jellyfin`; reads `/srv/media` | Media is mounted read-only and is disposable |
+| n8n | `https://n8n.max-petri.xyz` | `127.0.0.1:5678` | n8n and PostgreSQL state under `/srv/containers/n8n` | Personal and Formula Student workflows; external task runner; 14-day/10,000-execution pruning |
 
-Compose definitions are in `compose/<service>/compose.yml`. Docker image tags currently follow upstream `latest` except MariaDB and Redis, which are pinned to major image tags. Treat image changes as production changes: review release notes and verify each service after recreating it.
+Compose definitions are in `compose/<service>/compose.yml`. Docker image tags currently follow upstream `latest` except MariaDB, Redis, PostgreSQL, n8n, and its task runner, which use pinned major or exact tags. The n8n and runner versions must match. Treat image changes as production changes: review release notes and verify each service after recreating it.
+
+n8n remains private to the LAN and Tailnet. Scheduled workflows and outgoing API calls work, but third-party services on the public Internet cannot reach its webhook endpoints. See [compose/n8n/README.md](compose/n8n/README.md) for setup, the Formula Student separation convention, and the later migration procedure.
 
 ## Repository map
 
@@ -72,6 +78,7 @@ sudo docker compose -f /etc/nixos/compose/vaultwarden/compose.yml ps
 sudo docker compose -f /etc/nixos/compose/owncloud/compose.yml ps
 sudo docker compose -f /etc/nixos/compose/dockge/compose.yml ps
 sudo docker compose -f /etc/nixos/compose/jellyfin/compose.yml ps
+sudo docker compose -f /etc/nixos/compose/n8n/compose.yml ps
 df -h / /srv
 sudo journalctl -p warning..alert --since "24 hours ago"
 ```
@@ -126,17 +133,18 @@ Before changing firewall rules, Tailscale ACLs, DNS, or Caddy routes, preserve a
 
 ### Change secrets
 
-Follow [secrets/README.md](secrets/README.md). After changing encrypted values, copy the encrypted file to the server-local `/etc/nixos/secrets/secrets.yaml` and rebuild with `--impure`. The `homeserver-compose-secrets` oneshot writes root-only `.env` files for ownCloud and Vaultwarden. Restart the affected Compose stack to consume a changed value.
+Follow [secrets/README.md](secrets/README.md). After changing encrypted values, copy the encrypted file to the server-local `/etc/nixos/secrets/secrets.yaml` and rebuild with `--impure`. The `homeserver-compose-secrets` oneshot writes root-only `.env` files for ownCloud, Vaultwarden, and n8n. Restart the affected Compose stack to consume a changed value.
 
 ## Backup, recovery, and capacity
 
-No automated backup job is currently configured in this repository. The intended first backup is a small encrypted Vaultwarden backup to Google Drive, but this remains future work. Until an implementation is committed and tested, treat Vaultwarden and ownCloud data as unprotected.
+No automated backup job is currently configured in this repository. The intended first backup is a small encrypted Vaultwarden backup to Google Drive, but this remains future work. Until an implementation is committed and tested, treat Vaultwarden, ownCloud, and n8n data as unprotected.
 
 Include in any backup plan:
 
 - `/srv/containers/vaultwarden`
 - `/srv/owncloud/files` and `/srv/containers/owncloud` (MariaDB must be backed up consistently)
 - `/srv/containers/dockge` and `/srv/containers/jellyfin/config`
+- a consistent PostgreSQL dump for n8n plus `/srv/containers/n8n/data`; preserving `n8n_encryption_key` is required to decrypt restored credentials
 - `/etc/nixos`, excluding plaintext secrets but including access to the encrypted `secrets.yaml` and a separately secured age private-key recovery copy
 
 Jellyfin media in `/srv/media` and Google Drive data mounted through ownCloud are deliberately excluded from the proposed backup scope. Check `/srv` capacity weekly and before large media imports; root has only 50 GB and Nix retains 14 days of generations.
@@ -149,7 +157,8 @@ For a failed declarative deployment, select an earlier NixOS generation from the
 2. Install using [INSTALL.md](INSTALL.md), then replace the placeholder hardware file with the installer-generated configuration.
 3. Configure the `max` SSH key, router DHCP reservation, Tailscale, and encrypted secrets.
 4. Apply the host configuration and start the Compose stacks.
-5. Configure the ownCloud Google Drive mount using [compose/owncloud/GOOGLE_DRIVE_SETUP.md](compose/owncloud/GOOGLE_DRIVE_SETUP.md). Use a Production OAuth application: testing-mode refresh tokens expire after seven days.
+5. Create the n8n owner, enable 2FA, and follow the separation conventions in [compose/n8n/README.md](compose/n8n/README.md) before adding Formula Student workflows.
+6. Configure the ownCloud Google Drive mount using [compose/owncloud/GOOGLE_DRIVE_SETUP.md](compose/owncloud/GOOGLE_DRIVE_SETUP.md). Use a Production OAuth application: testing-mode refresh tokens expire after seven days.
 
 ## Tailscale policy starter
 
