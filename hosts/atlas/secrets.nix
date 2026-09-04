@@ -38,12 +38,16 @@
   systemd.services.homeserver-compose-secrets = {
     description = "Materialize private Compose environment files";
     wantedBy = [ "multi-user.target" ];
+    after = [ "sops-install-secrets.service" ];
+    requires = [ "sops-install-secrets.service" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
     };
     script = ''
-      install -d -m 0700 \
+      # These are tracked source directories and must remain traversable by the
+      # non-root Git operator. Only the generated .env files are private.
+      install -d -m 0755 \
         /etc/nixos/compose/owncloud \
         /etc/nixos/compose/vaultwarden \
         /etc/nixos/compose/n8n
