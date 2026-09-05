@@ -1,0 +1,43 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    environment:
+      # Keep the small model in memory briefly for consecutive n8n requests,
+      # but release RAM when it is idle.
+      OLLAMA_KEEP_ALIVE: 10m
+    volumes:
+      - /srv/containers/ollama:/root/.ollama
+    ports:
+      # Caddy is the only LAN/Tailnet entry point. n8n uses the shared Docker
+      # network below and does not need to traverse the host network.
+      - "127.0.0.1:11434:11434"
+    healthcheck:
+      test: ["CMD", "/bin/ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - ollama
+
+  model-bootstrap:
+    image: ollama/ollama:latest
+    container_name: ollama-model-bootstrap
+    restart: "no"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    command: ["pull", "qwen3:4b"]
+    networks:
+      - ollama
+
+networks:
+  ollama:
+    external: true
+    name: ollama

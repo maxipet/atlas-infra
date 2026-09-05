@@ -68,6 +68,7 @@ services:
       - "127.0.0.1:5678:5678"
     networks:
       - n8n
+      - ollama
 
   task-runner:
     image: n8nio/runners:2.32.7
@@ -85,3 +86,8 @@ services:
 networks:
   n8n:
     name: n8n
+  # Created by the NixOS docker-network-ollama service. n8n calls Ollama
+  # directly over this private network at http://ollama:11434.
+  ollama:
+    external: true
+    name: ollama

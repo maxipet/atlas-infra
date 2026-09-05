@@ -13,9 +13,11 @@ LAN clients ──────┘               │                  ├─ Vaul
                                   │                  ├─ ownCloud    :8081
                                   │                  ├─ Dockge      :5001
                                   │                  ├─ Jellyfin    :8096
-                                  │                  └─ n8n         :5678
+                                  │                  ├─ n8n         :5678
                                   │                       ├─ PostgreSQL (internal)
                                   │                       └─ task runner (internal)
+                                  │                  └─ Ollama      :11434
+                                  │                       └─ Qwen3 4B (persistent models)
                                   │
                                   └── ACME DNS-01 certificates (IONOS)
 
@@ -47,10 +49,13 @@ The firewall and the Compose port bindings are deliberate defense-in-depth. Do n
 | Dockge | `https://atlas.max-petri.xyz` | `127.0.0.1:5001` | `/srv/containers/dockge` | Convenience UI; Git remains source of truth |
 | Jellyfin | `https://media.max-petri.xyz` | `127.0.0.1:8096` | config/cache in `/srv/containers/jellyfin`; reads `/srv/media` | Media is mounted read-only and is disposable |
 | n8n | `https://n8n.max-petri.xyz` | `127.0.0.1:5678` | n8n and PostgreSQL state under `/srv/containers/n8n` | Personal and Formula Student workflows; external task runner; 14-day/10,000-execution pruning |
+| Ollama | `https://ollama.max-petri.xyz/api` | `127.0.0.1:11434` | model cache in `/srv/containers/ollama` | CPU-only `qwen3:4b`; API is LAN/Tailnet-only and n8n can call it directly at `http://ollama:11434/api` |
 
 Compose definitions are in `compose/<service>/compose.yml`. Docker image tags currently follow upstream `latest` except MariaDB, Redis, PostgreSQL, n8n, and its task runner, which use pinned major or exact tags. The n8n and runner versions must match. Treat image changes as production changes: review release notes and verify each service after recreating it.
 
 n8n remains private to the LAN and Tailnet. Scheduled workflows and outgoing API calls work, but third-party services on the public Internet cannot reach its webhook endpoints. See [compose/n8n/README.md](compose/n8n/README.md) for setup, the Formula Student separation convention, and the later migration procedure.
+
+Ollama is likewise private to the LAN and Tailnet. Its API has no application-level authentication, so it must never receive a public DNS record, router port forward, or public firewall rule. [compose/ollama/README.md](compose/ollama/README.md) covers the model bootstrap, n8n endpoint, and verification steps.
 
 ## Repository map
 
@@ -79,6 +84,7 @@ sudo docker compose -f /etc/nixos/compose/owncloud/compose.yml ps
 sudo docker compose -f /etc/nixos/compose/dockge/compose.yml ps
 sudo docker compose -f /etc/nixos/compose/jellyfin/compose.yml ps
 sudo docker compose -f /etc/nixos/compose/n8n/compose.yml ps
+sudo docker compose -f /etc/nixos/compose/ollama/compose.yml ps
 df -h / /srv
 sudo journalctl -p warning..alert --since "24 hours ago"
 ```
@@ -147,7 +153,7 @@ Include in any backup plan:
 - a consistent PostgreSQL dump for n8n plus `/srv/containers/n8n/data`; preserving `n8n_encryption_key` is required to decrypt restored credentials
 - `/etc/nixos`, excluding plaintext secrets but including access to the encrypted `secrets.yaml` and a separately secured age private-key recovery copy
 
-Jellyfin media in `/srv/media` and Google Drive data mounted through ownCloud are deliberately excluded from the proposed backup scope. Check `/srv` capacity weekly and before large media imports; root has only 50 GB and Nix retains 14 days of generations.
+Jellyfin media in `/srv/media`, Google Drive data mounted through ownCloud, and Ollama model weights in `/srv/containers/ollama` are deliberately excluded from the proposed backup scope because they can be restored from their sources. Check `/srv` capacity weekly and before large media imports or model downloads; root has only 50 GB and Nix retains 14 days of generations.
 
 For a failed declarative deployment, select an earlier NixOS generation from the boot menu or run `sudo nixos-rebuild switch --rollback`. For a failed container update, restore the previous versioned Compose definition, run `sudo docker compose up -d`, and inspect its logs.
 
@@ -159,6 +165,7 @@ For a failed declarative deployment, select an earlier NixOS generation from the
 4. Apply the host configuration and start the Compose stacks.
 5. Create the n8n owner, enable 2FA, and follow the separation conventions in [compose/n8n/README.md](compose/n8n/README.md) before adding Formula Student workflows.
 6. Configure the ownCloud Google Drive mount using [compose/owncloud/GOOGLE_DRIVE_SETUP.md](compose/owncloud/GOOGLE_DRIVE_SETUP.md). Use a Production OAuth application: testing-mode refresh tokens expire after seven days.
+7. Apply the host configuration and start Ollama, following [compose/ollama/README.md](compose/ollama/README.md), before creating workflows that use the local model.
 
 ## Tailscale policy starter
 

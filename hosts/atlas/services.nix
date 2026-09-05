@@ -11,6 +11,23 @@ in
 {
   virtualisation.docker.enable = true;
 
+  # This network is intentionally owned by NixOS rather than either Compose
+  # project. It lets n8n reach Ollama directly without introducing a startup
+  # dependency between the two stacks.
+  systemd.services.docker-network-ollama = {
+    description = "Private Docker network shared by n8n and Ollama";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "docker.service" ];
+    after = [ "docker.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${pkgs.docker}/bin/docker network inspect ollama >/dev/null 2>&1 || ${pkgs.docker}/bin/docker network create --driver bridge ollama
+    '';
+  };
+
   # Keep the initial Wi-Fi connection managed until Atlas is moved to Ethernet.
   networking.networkmanager.enable = true;
 
@@ -103,6 +120,12 @@ in
         ${tlsConfig}
         reverse_proxy 127.0.0.1:5678
       '';
+      # Ollama has no application-level authentication. This route is guarded
+      # by the existing LAN/Tailnet firewall boundary and must not be public.
+      "ollama.max-petri.xyz".extraConfig = ''
+        ${tlsConfig}
+        reverse_proxy 127.0.0.1:11434
+      '';
     };
   };
 
@@ -113,6 +136,8 @@ in
     "d /srv/containers/n8n 0750 root root -"
     # The n8n image runs as its unprivileged node user (UID 1000).
     "d /srv/containers/n8n/data 0750 1000 1000 -"
+    # Ollama stores downloaded model weights here; its container writes as root.
+    "d /srv/containers/ollama 0750 root root -"
     "d /srv/owncloud 0750 root root -"
     # New media inherits the dedicated media group used by Samba and Jellyfin.
     "d /srv/media 2770 root media -"
